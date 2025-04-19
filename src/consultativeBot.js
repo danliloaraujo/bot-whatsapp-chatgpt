@@ -1,0 +1,1 @@
+// lógica consultiva da IA fica aqui
