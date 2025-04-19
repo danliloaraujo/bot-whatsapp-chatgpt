@@ -1,2 +1,1 @@
-// Arquivo com respostas configuradas
-module.exports = {};
+// Arquivo reservado para futuras respostas fixas.

@@ -1,83 +1,64 @@
-
+require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const axios = require('axios');
-const app = express();
-app.use(express.json());
+const fs = require('fs');
 
-const token = process.env.WHATSAPP_TOKEN;
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const app = express();
+const port = process.env.PORT || 10000;
+
+app.use(bodyParser.json());
 
 app.post('/webhook', async (req, res) => {
-  const entry = req.body.entry?.[0];
-  const changes = entry?.changes?.[0];
-  const message = changes?.value?.messages?.[0];
+    const entry = req.body?.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const message = changes?.value?.messages?.[0];
+    const from = message?.from;
+    const text = message?.text?.body;
 
-  if (!message || !message.text || !message.text.body) {
-    return res.sendStatus(200);
-  }
+    if (!from || !text) {
+        return res.sendStatus(200);
+    }
 
-  const userMsg = message.text.body.toLowerCase();
-  const phoneNumberId = changes.value.metadata.phone_number_id;
-  const from = message.from;
+    console.log("Mensagem recebida:", text);
 
-  console.log("Mensagem recebida:", userMsg);
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-3.5-turbo',
+            messages: [
+                { role: 'system', content: 'Você é um atendente da Valorei com tom consultivo e humano, vendendo serviços de marketing e recrutamento, sempre coletando informações do cliente antes de sugerir reunião.' },
+                { role: 'user', content: text }
+            ]
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
 
-  let resposta = '';
-  let followUp = '';
+        const respostaIA = response.data.choices[0].message.content;
 
-  // Interpretação e consultoria
-  if (userMsg.includes('vender') || userMsg.includes('vendas')) {
-    resposta = "Legal! Atualmente você conta com alguma estratégia comercial? Como é seu processo de vendas?";
-    followUp = "Acredito que a Valorei possa te ajudar. Podemos agendar uma conversa para entender melhor seus desafios atuais?";
-  } else if (userMsg.includes('site')) {
-    resposta = "Você já tem um site ativo? Ou está em busca de criar um do zero? Me dá um contexto que consigo te orientar melhor.";
-  } else if (userMsg.includes('emprego') || userMsg.includes('currículo')) {
-    resposta = "Ah, entendi! A Valorei Talents é focada no recrutamento de profissionais de TI. Você trabalha na área?";
-    followUp = "Se sim, posso te direcionar para o nosso formulário de candidatura.";
-  } else {
-    resposta = "Legal! Posso te ajudar com estratégias de vendas, marketing ou recrutamento tech. Me conta um pouco sobre sua empresa ou desafio atual.";
-  }
+        await axios.post(`https://graph.facebook.com/v17.0/${process.env.WHATSAPP_PHONE_ID}/messages`, {
+            messaging_product: 'whatsapp',
+            to: from,
+            text: { body: respostaIA }
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
+            }
+        });
+    } catch (error) {
+        console.error("Erro ao responder mensagem:", error.message);
+    }
 
-  // Delay natural para resposta (15s)
-  await delay(15000);
-
-  await axios.post(`https://graph.facebook.com/v17.0/${phoneNumberId}/messages`, {
-    messaging_product: 'whatsapp',
-    to: from,
-    type: 'text',
-    text: { body: resposta }
-  }, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  if (followUp) {
-    await delay(15000);
-    await axios.post(`https://graph.facebook.com/v17.0/${phoneNumberId}/messages`, {
-      messaging_product: 'whatsapp',
-      to: from,
-      type: 'text',
-      text: { body: followUp }
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-  }
-
-  res.sendStatus(200);
+    res.sendStatus(200);
 });
 
-app.get('/webhook', (req, res) => {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
-
-  if (mode && token && mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
-    res.status(200).send(challenge);
-  } else {
-    res.sendStatus(403);
-  }
+app.get('/', (req, res) => {
+    res.send("Servidor rodando com IA consultiva na porta " + port);
 });
 
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
+    console.log(`Servidor rodando na porta ${port}`);
 });
