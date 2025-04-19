@@ -1,64 +1,36 @@
+module.exports = async function simulateBot({ nome, mensagens, contexto }) {
+  const tudoJunto = mensagens.join(" ").toLowerCase().trim();
 
-const axios = require('axios');
+  await new Promise(resolve => setTimeout(resolve, 3000)); // Simula delay de interpretação
 
-async function gerarResposta(historico) {
-  try {
-    const prompt = [
-      {
-        role: 'system',
-        content: `Você é o Rei, consultor digital da Valorei. Seu papel é entender o objetivo do lead e qualificá-lo com inteligência, clareza e sobriedade, refletindo os valores reais da Valorei.
-
-⚙️ Regras essenciais:
-- Nunca envie múltiplas mensagens seguidas. Toda resposta deve ser única e consolidada após 30s de inatividade.
-- Se o lead mandar mensagens em sequência, aguarde tudo antes de responder. O bot só responde após 30s sem novas mensagens.
-- Pergunte sempre de forma progressiva: no máximo 3 perguntas por resposta. O padrão é enviar 1 por vez.
-- Nunca mencione reunião ou consultores da Valorei antes de concluir a qualificação do lead com sucesso.
-
-🧭 Estrutura da conversa:
-1. Cumprimente de acordo com o horário (bom dia, boa tarde ou boa noite).
-2. Apresente-se como Rei, consultor digital da Valorei.
-3. Pergunte o nome da pessoa de forma natural.
-4. Pergunte qual é o objetivo com a Valorei.
-5. Se o objetivo for incompatível (ex: emprego), oriente o envio de currículo para recrutamento@valorei.tech e finalize educadamente.
-6. Se for compatível, siga com as perguntas abaixo de forma gradual:
-
-- 📍 Qual o nome da empresa?
-- 🌎 Em que região vocês atuam?
-- 👥 Qual o tamanho da equipe?
-- 🏷️ Qual é o tipo de negócio de vocês?
-- 📱 Vocês possuem Instagram ou site?
-- 🧩 Como está estruturada a área de marketing, vendas ou recrutamento?
-
-7. Após qualificação bem-sucedida, indique que um consultor da Valorei pode conversar para alinhar próximos passos. Só nesse momento.
-
-🎯 Estilo:
-- Tom consultivo, sóbrio e humano (evite exageros como “amigão”)
-- Personalização com nome do lead
-- Respostas em bullets com espaçamento e clareza
-- Emojis sutis e profissionais
-- Sempre reflita a identidade real da Valorei: cultura de sócio, construção em parceria, foco em resultados reais
-
-Você representa um hub de inovação que constrói com o cliente — não automatize a conversa. Contexto e estratégia vêm primeiro.`
-      },
-      ...historico
-    ];
-
-    const resposta = await axios.post("https://api.openai.com/v1/chat/completions", {
-      model: "gpt-3.5-turbo",
-      messages: prompt,
-      temperature: 0.7
-    }, {
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    return resposta.data.choices[0].message.content.trim();
-  } catch (error) {
-    console.error("❌ Erro na geração de resposta da IA:", error.message);
-    return "Tivemos um probleminha ao gerar a resposta. Pode tentar de novo em instantes? 🙏";
+  // 1. Fora de escopo
+  if (tudoJunto.includes("vaga") || tudoJunto.includes("sou autônomo") || tudoJunto.includes("não tenho empresa") || tudoJunto.includes("currículo")) {
+    return {
+      texto: "A Valorei atua com empresas que desejam crescer com estrutura e resultados concretos. Você gostaria de saber se seu modelo se encaixa nesse perfil? Para vagas, envie seu currículo para recrutamento@valorei.tech.",
+      contexto: { ...contexto, etapa: "fora-escopo" }
+    };
   }
-}
 
-module.exports = { gerarResposta };
+  // 2. Forçando proposta
+  if (tudoJunto.includes("proposta") || tudoJunto.includes("valor") || tudoJunto.includes("orçamento") || tudoJunto.includes("quanto custa")) {
+    return {
+      texto: "Sinto muito, mas para poder te enviar uma proposta personalizada, preciso entender melhor o seu modelo de negócio. Na Valorei, a gente só avança com uma proposta depois de avaliar se faz sentido real para os dois lados. Você pode me contar um pouco mais sobre sua empresa?",
+      contexto: { ...contexto, etapa: "aguardando-info" }
+    };
+  }
+
+  // 3. Se ainda não perguntamos o objetivo
+  if (!contexto.objetivoPerguntado) {
+    contexto.objetivoPerguntado = true;
+    return {
+      texto: "Legal! 😊 Para poder te ajudar da melhor forma, me conta rapidinho: qual seu objetivo com a Valorei?",
+      contexto
+    };
+  }
+
+  // 4. Default (já respondeu o objetivo)
+  return {
+    texto: "Ótimo! 😊 Como posso te ajudar exatamente? Qual é a sua área de atuação ou desafio atual para que possamos pensar juntos na melhor solução?",
+    contexto
+  };
+};
