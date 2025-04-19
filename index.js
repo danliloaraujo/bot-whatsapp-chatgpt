@@ -1,94 +1,106 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
+const express = require("express");
+const bodyParser = require("body-parser");
+const axios = require("axios");
+require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
-const historico = {};
+const PORT = process.env.PORT || 10000;
+const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0";
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+const TOKEN = process.env.TOKEN;
 
-const delay = (ms) => new Promise(res => setTimeout(res, ms));
+let history = {};
 
-function escolherDelay(resposta) {
-    const base = 10000;
-    const extra = Math.min(resposta.length * 15, 8000); // até +8s
-    return base + extra;
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-app.post('/webhook', async (req, res) => {
-    const entry = req.body?.entry?.[0];
-    const changes = entry?.changes?.[0];
-    const message = changes?.value?.messages?.[0];
-    const from = message?.from;
-    const text = message?.text?.body;
+const templates = {
+  welcome: (name) => `Olá! Como posso te ajudar hoje?
+Seja bem-vindo ao chat da Valorei! 😊`,
+  start: () => `Tudo ótimo por aqui, e contigo?
+Estou à disposição para te ajudar no que precisar. Como posso contribuir para o crescimento da sua empresa hoje?`,
+  askCompany: () => `Legal! Antes de te apresentar os próximos passos, posso te pedir o nome da sua empresa?`,
+  askMarketingNeeds: () => `Pra te ajudar melhor, me conta rapidinho:
 
-    if (!from || !text) return res.sendStatus(200);
+- Qual o tamanho da sua equipe?
+- Qual o ramo do seu negócio?
+- Qual o Instagram ou site da empresa?`,
+  leadQualified: () => `Perfeito, com base nessas informações acredito que faz sentido marcarmos um bate-papo rápido pra entender mais a fundo e te ajudar a gerar melhores resultados.`,
+  askSchedule: () => `Pode me dizer sua disponibilidade de dia/horário? Um consultor vai te chamar conforme sua agenda. 🙂`,
+  fallback: () => `Desculpa, não consegui entender exatamente. Você poderia reformular ou me contar mais sobre sua necessidade?`,
+  jobSeeking: () => `Obrigado pelo interesse! Se você está buscando uma oportunidade, envie seu currículo para: recrutamento@valorei.tech
+E acompanhe as novas vagas nas redes sociais da Valorei! 💼`,
+};
 
-    if (!historico[from]) historico[from] = [];
-
-    historico[from].push({ role: 'user', content: text });
-
-    const prompt = [
-        {
-            role: 'system',
-            content: `Você é um consultor da Valorei. Seu atendimento é consultivo, estratégico e com foco em resultados.
-
-Seu papel é entender o contexto do cliente e qualificar de forma natural e progressiva. Você nunca empurra uma reunião antes de entender:
-- Nome da empresa
-- Região/localização
-- Tamanho da empresa
-- Site e Instagram
-- Estrutura atual de marketing ou vendas
-- Tipo de negócio (ex: restaurante, loja, serviço etc)
-
-Sempre que o cliente disser que não sabe por onde começar, sua abordagem deve ser acolhedora e orientativa. Explique que a Valorei pode ajudar nessas definições e conduza a qualificação mesmo assim.
-
-Se o cliente for qualificado, pergunte a DISPONIBILIDADE DE AGENDA para uma conversa com um consultor. Nunca ofereça horários.
-
-Suas mensagens devem ser:
-- Claras e com até 4 linhas
-- Com bullets ou emojis para facilitar leitura
-- Com tempo de resposta mínimo de 10 segundos
-- Evitar textos longos ou didáticos
-
-Importante:
-- Nunca se comporte como um ChatGPT. Você é um especialista da Valorei.
-- Nunca ofereça dicas genéricas fora do contexto do cliente.
-- Foque sempre em como a Valorei pode contribuir para o crescimento do negócio.
-- Quando alguém procurar emprego, oriente a enviar currículo para recrutamento@valorei.tech e acompanhar as vagas nas mídias.
-
-Sempre finalize as etapas com tom consultivo e estratégico, como:
-- “Faz sentido para o seu momento”
-- “Acreditamos que podemos ajudar a aumentar seus resultados”
-
-Se o cliente perguntar como funciona o serviço, explique de forma objetiva que:
-“A Valorei atua com foco em performance e crescimento conjunto. Trabalhamos com marketing, vendas e recrutamento para empresas que buscam resultados concretos. Nosso modelo é baseado em parceria, onde crescemos junto com o cliente.”
-
-Comece agora a conversa de forma natural, consultiva e empática.`, {
-            messaging_product: 'whatsapp',
-            to: from,
-            text: { body: respostaIA }
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
-            }
-        });
-
-        historico[from].push({ role: 'assistant', content: respostaIA });
-    } catch (error) {
-        console.error("Erro ao responder:", error.message);
+async function sendMessage(to, message) {
+  await axios.post(
+    `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+    {
+      messaging_product: "whatsapp",
+      to,
+      text: { body: message },
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        "Content-Type": "application/json",
+      },
     }
+  );
+}
 
-    res.sendStatus(200);
+app.post("/webhook", async (req, res) => {
+  const entry = req.body.entry?.[0];
+  const changes = entry?.changes?.[0];
+  const message = changes?.value?.messages?.[0];
+
+  if (!message) return res.sendStatus(200);
+
+  const from = message.from;
+  const text = message.text?.body?.toLowerCase();
+  if (!history[from]) history[from] = [];
+
+  history[from].push(text);
+
+  try {
+    if (text.includes("vaga") || text.includes("emprego") || text.includes("trabalho")) {
+      await delay(10000);
+      await sendMessage(from, templates.jobSeeking());
+    } else if (history[from].length === 1) {
+      await delay(10000);
+      await sendMessage(from, templates.welcome());
+    } else if (history[from].length === 2) {
+      await delay(10000);
+      await sendMessage(from, templates.start());
+    } else if (history[from].length === 3) {
+      await delay(10000);
+      await sendMessage(from, templates.askCompany());
+    } else if (history[from].length === 4) {
+      await delay(10000);
+      await sendMessage(from, templates.askMarketingNeeds());
+    } else if (history[from].length === 5) {
+      await delay(10000);
+      await sendMessage(from, templates.leadQualified());
+      await delay(15000);
+      await sendMessage(from, templates.askSchedule());
+    } else {
+      await delay(10000);
+      await sendMessage(from, templates.fallback());
+    }
+  } catch (err) {
+    console.error("Erro ao enviar mensagem:", err.message);
+  }
+
+  res.sendStatus(200);
 });
 
-app.get('/', (req, res) => {
-    res.send("🤖 Bot Valorei consultivo ativo.");
+app.get("/", (req, res) => {
+  res.send("Valorei bot is live.");
 });
 
-app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
