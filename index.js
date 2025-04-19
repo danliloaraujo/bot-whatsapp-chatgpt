@@ -5,12 +5,17 @@ const axios = require('axios');
 
 const app = express();
 const port = process.env.PORT || 10000;
-
 app.use(bodyParser.json());
 
 const historico = {};
 
-const delay = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+function escolherDelay(resposta) {
+    const base = 10000;
+    const extra = Math.min(resposta.length * 15, 8000); // até +8s
+    return base + extra;
+}
 
 app.post('/webhook', async (req, res) => {
     const entry = req.body?.entry?.[0];
@@ -21,19 +26,30 @@ app.post('/webhook', async (req, res) => {
 
     if (!from || !text) return res.sendStatus(200);
 
-    // iniciar histórico se necessário
     if (!historico[from]) historico[from] = [];
 
     historico[from].push({ role: 'user', content: text });
 
     const prompt = [
-        { role: 'system', content: 'Você é um consultor inteligente e gentil da Valorei, que atua com marketing, vendas e recrutamento tech. Você qualifica leads com perguntas progressivas, mantendo um tom humano, informal e consultivo. Nunca agenda uma conversa sem entender o momento do cliente, e só sugere uma reunião se o lead estiver claramente qualificado. Use pausas e responda de forma leve, como um humano da Valorei faria. Quando possível, destaque os valores da Valorei como parceria, cultura de sócio, personalização e entrega por resultado. Sempre pense com naturalidade e inteligência.' },
+        {
+            role: 'system',
+            content: `Você é um consultor da Valorei. Seu atendimento é consultivo, humano e focado em qualificar leads de forma natural.
+Use tom leve, organize respostas longas em parágrafos ou bullets, aplique pausas (delay simulado), e nunca proponha reuniões sem entender:
+- Tamanho da empresa
+- Tipo de negócio
+- Site ou Instagram
+- Estrutura atual
+
+No Valorei Talents e Professionals, também colete: região, job description, número de vagas e perfis.
+
+Fale dos valores da Valorei: crescimento conjunto, cultura de sócio e modelo de sucesso proporcional. Evite soar robótico ou repetitivo.`
+        },
         ...historico[from]
     ];
 
     try {
-        const completion = await axios.post("https://api.openai.com/v1/chat/completions", {
-            model: "gpt-3.5-turbo",
+        const completion = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-3.5-turbo',
             messages: prompt
         }, {
             headers: {
@@ -44,7 +60,8 @@ app.post('/webhook', async (req, res) => {
 
         const respostaIA = completion.data.choices[0].message.content;
 
-        await delay(10000); // 10 segundos para simular naturalidade
+        const tempoEspera = escolherDelay(respostaIA);
+        await delay(tempoEspera);
 
         await axios.post(`https://graph.facebook.com/v17.0/${process.env.WHATSAPP_PHONE_ID}/messages`, {
             messaging_product: 'whatsapp',
@@ -58,17 +75,17 @@ app.post('/webhook', async (req, res) => {
         });
 
         historico[from].push({ role: 'assistant', content: respostaIA });
-    } catch (err) {
-        console.error("Erro ao responder:", err.message);
+    } catch (error) {
+        console.error("Erro ao responder:", error.message);
     }
 
     res.sendStatus(200);
 });
 
 app.get('/', (req, res) => {
-    res.send("Bot consultivo da Valorei rodando.");
+    res.send("🤖 Bot Valorei consultivo ativo.");
 });
 
 app.listen(port, () => {
-    console.log("Servidor ativo na porta " + port);
+    console.log(`Servidor rodando na porta ${port}`);
 });
