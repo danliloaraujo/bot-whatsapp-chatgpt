@@ -1,1 +1,1 @@
-// Arquivo reservado para futuras respostas fixas.
+// Respostas modelo e estrutura de atendimento por serviço
