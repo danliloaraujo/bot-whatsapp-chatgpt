@@ -3,7 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const { getRespostaPersonalizada } = require('./src/respostas');
+const { gerarResposta } = require('./src/consultativeBot');
+const respostas = require('./src/respostas');
 
 const app = express();
 app.use(bodyParser.json());
@@ -14,14 +15,14 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
 
 let historico = {};
+let lastMessageTime = {};
 
 function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
 app.post('/webhook', async (req, res) => {
-  const entry = req.body.entry?.[0];
-  const message = entry?.changes?.[0]?.value?.messages?.[0];
+  const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   const from = message?.from;
   const text = message?.text?.body;
 
@@ -31,12 +32,18 @@ app.post('/webhook', async (req, res) => {
   historico[from].push({ role: 'user', content: text });
 
   try {
-    const respostaIA = await getRespostaPersonalizada(text);
+    const currentTime = Date.now();
+    const timeSinceLast = currentTime - (lastMessageTime[from] || 0);
+    const resetDelay = 30000;
+    if (timeSinceLast > resetDelay) {
+      lastMessageTime[from] = currentTime;
+    }
 
+    const respostaIA = await gerarResposta(historico[from]);
     historico[from].push({ role: 'assistant', content: respostaIA });
 
     const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
-    await delay(delayTime);
+    await delay(Math.max(delayTime, resetDelay));
 
     await axios.post(
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
@@ -53,16 +60,12 @@ app.post('/webhook', async (req, res) => {
       }
     );
   } catch (err) {
-    console.error("Erro no webhook:", err.message);
+    console.error("❌ Erro ao enviar resposta:", err.message);
   }
 
   res.sendStatus(200);
 });
 
-app.get('/', (req, res) => {
-  res.send("🤖 Valorei Bot está rodando com comportamento consultivo!");
-});
-
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });

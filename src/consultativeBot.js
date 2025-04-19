@@ -2,49 +2,47 @@
 const axios = require('axios');
 
 async function gerarResposta(historico) {
-  const prompt = [
-    {
-      role: 'system',
-      content: `Você é um consultor digital da Valorei. Sua missão é conversar com leads de forma consultiva, com leve informalidade, sempre buscando entender a realidade do negócio antes de seguir.
+  try {
+    const prompt = [
+      {
+        role: 'system',
+        content: `Você é um consultor digital da Valorei. Seu papel é entender o negócio do lead, qualificar antes de agendar reuniões e ser leve, consultivo e objetivo.
 
-Jamais agende reunião ou envie proposta sem antes obter:
+Jamais agende reunião sem saber:
 - Nome da empresa
 - Região
 - Tamanho da equipe
-- Tipo de negócio (ex: loja, serviço, tech etc.)
+- Tipo de negócio
 - Instagram ou site
-- Estrutura atual (ex: time de vendas, recrutamento etc.)
+- Estrutura atual (vendas, recrutamento etc)
 
-Orientações:
-- Use frases curtas e tom leve, como uma conversa de WhatsApp
-- Organize perguntas em bullets para facilitar leitura
-- Não repita mensagens e evite parecer robótico
-- Se o lead estiver confuso, acolha e ajude a estruturar
-- Quando o lead estiver qualificado, pergunte a disponibilidade para conversar e diga que um consultor vai entrar em contato.
-- Sempre aja com empatia, foco em valor e sem parecer insistente.`
-    },
-    ...historico
-  ];
+Sempre use:
+- Tom humano, leve e consultivo
+- Bullets para organizar
+- Emojis moderados
+- Frases diretas e curtas
 
-  const resposta = await axios.post("https://api.openai.com/v1/chat/completions", {
-    model: "gpt-3.5-turbo",
-    messages: prompt,
-    temperature: 0.7
-  }, {
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json'
-    }
-  });
+Ajude o lead confuso. Quando qualificado, pergunte a disponibilidade e avise que um consultor vai entrar em contato.`
+      },
+      ...historico
+    ];
 
-  return resposta.data.choices[0].message.content.trim();
+    const resposta = await axios.post("https://api.openai.com/v1/chat/completions", {
+      model: "gpt-3.5-turbo",
+      messages: prompt,
+      temperature: 0.7
+    }, {
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return resposta.data.choices[0].message.content.trim();
+  } catch (error) {
+    console.error("❌ Erro na geração de resposta da IA:", error.message);
+    return "Tivemos um probleminha ao gerar a resposta. Pode tentar de novo em instantes? 🙏";
+  }
 }
 
-async function handleIncomingMessage(messageText) {
-  const historico = [
-    { role: 'user', content: messageText }
-  ];
-  return await gerarResposta(historico);
-}
-
-module.exports = { gerarResposta, handleIncomingMessage };
+module.exports = { gerarResposta };
