@@ -1,3 +1,1 @@
-module.exports = {
-  saudacao: "Olá! Bem-vindo à Valorei 👋 Como posso te ajudar hoje?"
-};
+// Arquivo reservado para futuras respostas fixas.
