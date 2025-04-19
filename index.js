@@ -6,7 +6,6 @@ const { gerarResposta } = require('./src/consultativeBot');
 
 const app = express();
 const port = process.env.PORT || 10000;
-
 app.use(bodyParser.json());
 
 app.get('/webhook', (req, res) => {
@@ -14,7 +13,6 @@ app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-
   if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
     return res.status(200).send(challenge);
   } else {
@@ -23,7 +21,6 @@ app.get('/webhook', (req, res) => {
 });
 
 let historico = {};
-
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -33,19 +30,14 @@ app.post('/webhook', async (req, res) => {
   const message = entry?.changes?.[0]?.value?.messages?.[0];
   const from = message?.from;
   const text = message?.text?.body;
-
   if (!from || !text) return res.sendStatus(200);
   if (!historico[from]) historico[from] = [];
-
   historico[from].push({ role: 'user', content: text });
-
   try {
     const resposta = await gerarResposta(historico[from]);
     historico[from].push({ role: 'assistant', content: resposta });
-
     const delayTime = Math.min(Math.max(resposta.length * 15, 10000), 20000);
     await delay(delayTime);
-
     await axios.post(
       `https://graph.facebook.com/v18.0/${process.env.PHONE_NUMBER_ID}/messages`,
       {
@@ -63,7 +55,6 @@ app.post('/webhook', async (req, res) => {
   } catch (error) {
     console.error("Erro ao enviar resposta:", error.message);
   }
-
   res.sendStatus(200);
 });
 
