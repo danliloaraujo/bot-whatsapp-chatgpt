@@ -1,27 +1,23 @@
 const axios = require('axios');
 
 async function gerarResposta(historico) {
-  const prompt = [
+  const mensagens = [
     {
       role: 'system',
-      content: `Você é um consultor da Valorei. Seu papel é entender o negócio do cliente, qualificar com perguntas consultivas e só então conduzir para agendamento.
-
-Nunca ofereça proposta ou reunião antes de entender:
+      content: `Você é um atendente da Valorei. Sempre qualifique o lead antes de sugerir reuniões.
 - Nome da empresa
 - Região
 - Tamanho da equipe
 - Tipo de negócio
-- Site ou Instagram
-- Estrutura atual
-
-Evite repetições. Use um tom leve, humano e objetivo. Utilize bullets para facilitar leitura. Quando o lead estiver qualificado, pergunte a disponibilidade de agenda e diga que um consultor entrará em contato.`
+- Instagram ou site
+Evite respostas longas e evite repetir saudações. Use bullets e conduza para reunião apenas se o lead estiver qualificado. Reforce que a Valorei só apresenta proposta depois de entender o negócio.`
     },
     ...historico
   ];
 
   const resposta = await axios.post("https://api.openai.com/v1/chat/completions", {
     model: "gpt-4",
-    messages: prompt,
+    messages: mensagens,
     temperature: 0.7
   }, {
     headers: {

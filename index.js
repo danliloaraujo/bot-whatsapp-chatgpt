@@ -5,17 +5,27 @@ const axios = require('axios');
 const { gerarResposta } = require('./src/consultativeBot');
 
 const app = express();
+const port = process.env.PORT || 10000;
+
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 10000;
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
+app.get('/webhook', (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
+    return res.status(200).send(challenge);
+  } else {
+    return res.sendStatus(403);
+  }
+});
 
 let historico = {};
 
 function delay(ms) {
-  return new Promise(res => setTimeout(res, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 app.post('/webhook', async (req, res) => {
@@ -30,38 +40,33 @@ app.post('/webhook', async (req, res) => {
   historico[from].push({ role: 'user', content: text });
 
   try {
-    const respostaIA = await gerarResposta(historico[from]);
+    const resposta = await gerarResposta(historico[from]);
+    historico[from].push({ role: 'assistant', content: resposta });
 
-    historico[from].push({ role: 'assistant', content: respostaIA });
-
-    const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
+    const delayTime = Math.min(Math.max(resposta.length * 15, 10000), 20000);
     await delay(delayTime);
 
     await axios.post(
-      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+      `https://graph.facebook.com/v18.0/${process.env.PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: 'whatsapp',
         to: from,
-        text: { body: respostaIA }
+        text: { body: resposta }
       },
       {
         headers: {
-          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          Authorization: `Bearer ${process.env.ACCESS_TOKEN}`,
           'Content-Type': 'application/json'
         }
       }
     );
-  } catch (err) {
-    console.error("Erro no webhook:", err.message);
+  } catch (error) {
+    console.error("Erro ao enviar resposta:", error.message);
   }
 
   res.sendStatus(200);
 });
 
-app.get('/', (req, res) => {
-  res.send("🤖 Valorei Bot está rodando com comportamento consultivo!");
-});
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
 });
