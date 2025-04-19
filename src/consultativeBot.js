@@ -4,7 +4,7 @@ async function gerarResposta(historico) {
   const mensagens = [
     {
       role: 'system',
-      content: 'Você é um atendente da Valorei. Sempre qualifique o lead antes de sugerir reuniões.'
+      content: \`Você é um atendente da Valorei. Sempre qualifique o lead antes de sugerir reuniões.
 - Nome da empresa
 - Região
 - Tamanho da equipe
