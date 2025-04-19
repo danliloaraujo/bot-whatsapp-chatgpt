@@ -1,1 +1,3 @@
-// Respostas modelo e estrutura de atendimento por serviço
+module.exports = {
+  saudacao: "Olá! Bem-vindo à Valorei 👋 Como posso te ajudar hoje?"
+};

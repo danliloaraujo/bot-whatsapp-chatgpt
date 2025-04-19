@@ -1,1 +1,3 @@
-// Lógica de conversa com base no Processo de Qualidade Bot Valorei
+module.exports = async function handleIncomingMessage(message) {
+  return "Mensagem recebida: " + message.text?.body;
+};

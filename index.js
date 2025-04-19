@@ -6,14 +6,12 @@ const app = express();
 app.use(express.json());
 
 app.post("/webhook", async (req, res) => {
-  try {
-    const message = req.body.message;
-    const response = await handleIncomingMessage(message);
-    res.status(200).json({ response });
-  } catch (error) {
-    console.error("Erro ao enviar resposta:", error.message);
-    res.status(500).json({ error: "Erro ao enviar resposta" });
+  const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  if (!message) {
+    return res.sendStatus(200);
   }
+  const response = await handleIncomingMessage(message);
+  res.status(200).json({ response });
 });
 
 app.get("/webhook", (req, res) => {
