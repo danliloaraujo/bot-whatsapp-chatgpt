@@ -16,6 +16,7 @@ const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
 
 let historico = {};
 let lastMessageTime = {};
+let mensagensProcessadas = new Set(); // Controle de duplicidade
 
 function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
@@ -25,10 +26,19 @@ app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   const from = message?.from;
   const text = message?.text?.body;
+  const messageId = message?.id;
 
-  if (!from || !text) return res.sendStatus(200);
+  if (!from || !text || !messageId) return res.sendStatus(200);
+
+  if (mensagensProcessadas.has(messageId)) {
+    console.log("🔁 Mensagem duplicada ignorada:", messageId);
+    return res.sendStatus(200);
+  }
+
+  mensagensProcessadas.add(messageId);
+  setTimeout(() => mensagensProcessadas.delete(messageId), 3600000); // 1h
+
   if (!historico[from]) historico[from] = [];
-
   historico[from].push({ role: 'user', content: text });
 
   try {
