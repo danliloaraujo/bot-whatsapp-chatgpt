@@ -1,1 +1,1 @@
-// lógica consultiva da IA fica aqui
+// Lógica de conversa com base no Processo de Qualidade Bot Valorei
