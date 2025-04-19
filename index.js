@@ -1,7 +1,7 @@
 
 require("dotenv").config();
 const express = require("express");
-const { handleIncomingMessage } = require("./consultativeBot");
+const { handleIncomingMessage } = require("./src/consultativeBot");
 
 const app = express();
 app.use(express.json());
