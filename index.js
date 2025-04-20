@@ -22,7 +22,7 @@ let mensagensProcessadas = new Set(); // Controle de duplicidade;
 function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
-
+app.post('/webhook', async (req, res) => {
 app.post('/webhook', async (req, res) => { return 
  };
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
