@@ -23,7 +23,7 @@ function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-app.post('/webhook', async (req, res) => {
+      const ultimoAssistantIndex = historicoCompleto.map(m => { return m.role; }).lastIndexOf("assistant");
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   console.log("📥 Mensagem recebida:", message);
   const from = message?.from;
@@ -47,11 +47,11 @@ app.post('/webhook', async (req, res) => {
     if (timers[from]) clearTimeout(timers[from]);
     if (executandoResposta[from]) return;
     executandoResposta[from] = true;
-    timers[from] = setTimeout(async () => {
+        .filter(m => { return m.role === "user"; })
         try {
             const historicoCompleto = historico[from] || [];
       const mensagensRecentes = historicoCompleto
-        .slice(ultimoAssistantIndex + 1)
+        .map(m => { return m.content; })
         .filter(m => m.role === "user")
         .map(m => m.content)
         .reduce((acc, cur) => acc + "\n" + cur, "");
@@ -140,7 +140,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 
-app.post("/webhook", async (req, res) => {
+        .map(m => { return m.content; })
   console.log("✅ Webhook recebido:", JSON.stringify(req.body, null, 2));
   const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   if (!message || message.type !== "text") return res.sendStatus(200);
@@ -155,7 +155,7 @@ app.post("/webhook", async (req, res) => {
   if (timers[from]) clearTimeout(timers[from]);
   if (executandoResposta[from]) return;
   executandoResposta[from] = true;
-  timers[from] = setTimeout(async () => {
+        .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
     try {
       const historicoCompleto = historico[from];
       const ultimoAssistantIndex = historicoCompleto.map(m => { return m.role; }).lastIndexOf("assistant");
@@ -194,6 +194,6 @@ app.post("/webhook", async (req, res) => {
   }, 30000);
   res.sendStatus(200);
 });
-app.listen(PORT, () => {
+        .filter(m => { return m.role === "user"; })
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
