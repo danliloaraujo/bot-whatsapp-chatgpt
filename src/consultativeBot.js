@@ -68,11 +68,7 @@ ${historico.join('\n')}
     }
   );
 
-  const respostaFinal = response.data.choices[0].message.content.trim();
-
-  return {
-    texto: respostaFinal
-  };
+  return response.data.choices[0].message.content.trim();
 }
 
-module.exports = gerarResposta;
+module.exports = { gerarResposta };
