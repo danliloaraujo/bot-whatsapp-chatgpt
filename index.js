@@ -66,7 +66,20 @@ app.post('/webhook', async (req, res) => {
             const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
             await delay(delayTime);
             await axios.post(
-  console.log("📤 Enviando resposta via WhatsApp...");
+                `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+                {
+                    messaging_product: "whatsapp",
+                    to: from,
+                    text: { body: respostaIA }
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${ACCESS_TOKEN}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+            console.log("📤 Enviando resposta via WhatsApp...");
                 `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
                 {
                     messaging_product: "whatsapp",
@@ -101,6 +114,20 @@ app.post('/webhook', async (req, res) => {
     await delay(Math.max(delayTime, resetDelay));
 
     await axios.post(
+                `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+                {
+                    messaging_product: "whatsapp",
+                    to: from,
+                    text: { body: respostaIA }
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${ACCESS_TOKEN}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+            console.log("📤 Enviando resposta via WhatsApp...");
   console.log("📤 Enviando resposta via WhatsApp...");
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
       {
