@@ -43,8 +43,6 @@ app.post('/webhook', async (req, res) => {
   historico[from].push({ role: 'user', content: text });
 
     if (timers[from]) clearTimeout(timers[from]);
-    if (executandoResposta[from]) return;
-    executandoResposta[from] = true;
     if (timers[from]) clearTimeout(timers[from]);
     if (executandoResposta[from]) return;
     executandoResposta[from] = true;
@@ -76,43 +74,6 @@ app.post('/webhook', async (req, res) => {
                     headers: {
                         Authorization: `Bearer ${ACCESS_TOKEN}`,
                         "Content-Type": "application/json"
-                    }
-                }
-            );
-        } catch (err) {
-            console.error("❌ Erro ao enviar resposta:", err.message);
-        } finally {
-            executandoResposta[from] = false;
-        }
-    }, 30000);
-            const mensagensRecentes = historicoCompleto
-              .slice(ultimoAssistantIndex + 1)
-              .filter(m => m.role === 'user')
-              .map(m => m.content)
-              .reduce((acc, cur) => acc + "\\n" + cur, "")
-
-            const historicoFinal = [
-              ...historicoCompleto.slice(0, ultimoAssistantIndex + 1),
-              { role: 'user', content: mensagensRecentes }
-            ];
-
-            const respostaIA = await gerarResposta(historicoFinal);
-            historico[from].push({ role: 'assistant', content: respostaIA });
-
-            const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
-            await delay(delayTime);
-
-            await axios.post(
-                `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
-                {
-                    messaging_product: 'whatsapp',
-                    to: from,
-                    text: { body: respostaIA }
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${ACCESS_TOKEN}`,
-                        'Content-Type': 'application/json'
                     }
                 }
             );
