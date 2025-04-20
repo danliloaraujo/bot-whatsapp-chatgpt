@@ -50,13 +50,11 @@ app.post('/webhook', async (req, res) => {
     timers[from] = setTimeout(async () => {
         try {
             const historicoCompleto = historico[from] || [];
-      const mensagensRecentes = historicoCompleto.slice(ultimoAssistantIndex + 1)
-        .filter(m => { return m.role === "user"; })
-              .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
-              .filter(m => { return m.role === "user"; })
-        .map(m => { return m.content; })
-        .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
-            const respostaIA = await gerarResposta(historicoFinal);
+      const mensagensRecentes = historicoCompleto
+        .slice(ultimoAssistantIndex + 1)
+        .filter(m => m.role === "user")
+        .map(m => m.content)
+        .reduce((acc, cur) => acc + "\n" + cur, "");
   console.log("💬 Resposta gerada:", respostaIA);
             historico[from].push({ role: "assistant", content: respostaIA });
             const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
