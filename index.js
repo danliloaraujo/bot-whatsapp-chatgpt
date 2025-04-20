@@ -45,7 +45,21 @@ app.post('/webhook', async (req, res) => {
     if (timers[from]) clearTimeout(timers[from]);
     timers[from] = setTimeout(async () => {
         try {
-            const respostaIA = await gerarResposta(historico[from]);
+            const historicoCompleto = historico[from];
+            const ultimoAssistantIndex = historicoCompleto.map(m => m.role).lastIndexOf('assistant');
+            const mensagensRecentes = historicoCompleto
+              .slice(ultimoAssistantIndex + 1)
+              .filter(m => m.role === 'user')
+              .map(m => m.content)
+              .join('
+');
+
+            const historicoFinal = [
+              ...historicoCompleto.slice(0, ultimoAssistantIndex + 1),
+              { role: 'user', content: mensagensRecentes }
+            ];
+
+            const respostaIA = await gerarResposta(historicoFinal);
             historico[from].push({ role: 'assistant', content: respostaIA });
 
             const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
