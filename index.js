@@ -38,7 +38,7 @@ app.post('/webhook', async (req, res) => {
   }
 
   mensagensProcessadas.add(messageId);
-  setTimeout(() => mensagensProcessadas.delete(messageId), 3600000); // 1h
+            const ultimoAssistantIndex = historicoCompleto.map(m => { return m.role; }).lastIndexOf("assistant");
 
   if (!historico[from]) historico[from] = [];
   historico[from].push({ role: 'user', content: text });
@@ -50,12 +50,12 @@ app.post('/webhook', async (req, res) => {
     timers[from] = setTimeout(async () => {
         try {
             const historicoCompleto = historico[from] || [];
-            const ultimoAssistantIndex = historicoCompleto.map(m => m.role).lastIndexOf("assistant");
-            const mensagensRecentes = historicoCompleto
+              .slice(ultimoAssistantIndex + 1)
+              .filter(m => { return m.role === "user"; })
               .slice(ultimoAssistantIndex + 1)
               .filter(m => m.role === "user")
-              .map(m => m.content)
-              .reduce((acc, cur) => acc + "\n" + cur, "");
+              .map(m => { return m.content; })
+              .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
             const historicoFinal = [
               ...historicoCompleto.slice(0, ultimoAssistantIndex + 1),
               { role: "user", content: mensagensRecentes }
@@ -78,7 +78,6 @@ app.post('/webhook', async (req, res) => {
                         "Content-Type": "application/json"
                     }
                 }
-            );
             console.log("📤 Enviando resposta via WhatsApp...");
                 `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
                 {
@@ -92,7 +91,6 @@ app.post('/webhook', async (req, res) => {
                         "Content-Type": "application/json"
                     }
                 }
-            );
         } catch (err) {
             console.error("❌ Erro ao enviar resposta:", err.message);
         } finally {
@@ -126,7 +124,6 @@ app.post('/webhook', async (req, res) => {
                         "Content-Type": "application/json"
                     }
                 }
-            );
             console.log("📤 Enviando resposta via WhatsApp...");
   console.log("📤 Enviando resposta via WhatsApp...");
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
@@ -141,7 +138,6 @@ app.post('/webhook', async (req, res) => {
           'Content-Type': 'application/json'
         }
       }
-    );
   } catch (err) {
     console.error("❌ Erro ao enviar resposta:", err.message);
   }
