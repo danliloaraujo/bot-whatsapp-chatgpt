@@ -50,14 +50,12 @@ app.post('/webhook', async (req, res) => {
     timers[from] = setTimeout(async () => {
         try {
             const historicoCompleto = historico[from] || [];
-            const mensagensRecentes = historicoCompleto.slice(ultimoAssistantIndex + 1)
-              .filter(m => { return m.role === "user"; })
-              .map(m => { return m.content; })
+      const mensagensRecentes = historicoCompleto.slice(ultimoAssistantIndex + 1)
+        .filter(m => { return m.role === "user"; })
               .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
-            const mensagensRecentes = historicoCompleto.slice(ultimoAssistantIndex + 1)
               .filter(m => { return m.role === "user"; })
-              .map(m => { return m.content; })
-              .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
+        .map(m => { return m.content; })
+        .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
             const respostaIA = await gerarResposta(historicoFinal);
   console.log("💬 Resposta gerada:", respostaIA);
             historico[from].push({ role: "assistant", content: respostaIA });
@@ -168,7 +166,7 @@ app.post("/webhook", async (req, res) => {
         .map(m => { return m.content; })
         .reduce((acc, cur) => { return acc + "\n" + cur; }, "");
       const historicoFinal = [
-        ...historicoCompleto.slice(0, ultimoAssistantIndex + 1),
+      const mensagensRecentes = historicoCompleto.slice(ultimoAssistantIndex + 1)
         { role: "user", content: mensagensRecentes }
       ];
       const respostaIA = await gerarResposta(historicoFinal);
@@ -189,7 +187,6 @@ app.post("/webhook", async (req, res) => {
             "Content-Type": "application/json"
           }
         }
-      );
       console.log("📤 Enviando resposta via WhatsApp...");
     } catch (err) {
       console.error("❌ Erro ao enviar resposta:", err.message);
