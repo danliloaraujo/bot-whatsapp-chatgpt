@@ -43,15 +43,18 @@ app.post('/webhook', async (req, res) => {
   historico[from].push({ role: 'user', content: text });
 
     if (timers[from]) clearTimeout(timers[from]);
+    if (executandoResposta[from]) return;
+    executandoResposta[from] = true;
     timers[from] = setTimeout(async () => {
         try {
-            const historicoCompleto = historico[from];
+            const historicoCompleto = historico[from] || [];
             const ultimoAssistantIndex = historicoCompleto.map(m => m.role).lastIndexOf('assistant');
             const mensagensRecentes = historicoCompleto
               .slice(ultimoAssistantIndex + 1)
               .filter(m => m.role === 'user')
               .map(m => m.content)
-              .join("\n");
+              .join("
+");
 
             const historicoFinal = [
               ...historicoCompleto.slice(0, ultimoAssistantIndex + 1),
@@ -80,6 +83,8 @@ app.post('/webhook', async (req, res) => {
             );
         } catch (err) {
             console.error("❌ Erro ao enviar resposta:", err.message);
+        } finally {
+            executandoResposta[from] = false;
         }
     }, 30000);
 
