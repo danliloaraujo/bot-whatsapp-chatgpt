@@ -53,7 +53,7 @@ app.post('/webhook', async (req, res) => {
               .slice(ultimoAssistantIndex + 1)
               .filter(m => m.role === 'user')
               .map(m => m.content)
-              .join("
+              .reduce((acc, cur) => acc + "\\n" + cur, "")
 ");
 
             const historicoFinal = [
