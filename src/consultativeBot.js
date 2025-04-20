@@ -1,9 +1,10 @@
 const axios = require('axios');
 
-module.exports = async function simulateBot({ nome, mensagens, contexto }) {
+async function gerarResposta(historico) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
+
   const prompt = `
-Você é Rei, o atendente virtual da Valorei, uma empresa que atua como parceira estratégica em 3 frentes: 
+Você é Rei, o atendente virtual da Valorei, uma empresa que atua como parceira estratégica em 3 frentes:
 - Valorei Business: marketing com foco em resultado
 - Valorei Talents: recrutamento de profissionais de TI
 - Valorei Professionals: alocação de profissionais de tecnologia.
@@ -19,7 +20,7 @@ Você é Rei, o atendente virtual da Valorei, uma empresa que atua como parceira
 📌 Estilo: consultivo, inteligente, gentil e objetivo. Use emojis pontuais e personalize com o nome do lead sempre que possível. Condense as respostas após interpretar todas as mensagens do lead.
 
 Agora responda ao lead com base no histórico abaixo:
-${mensagens.join('\n')}
+${historico.join('\n')}
 `;
 
   const response = await axios.post(
@@ -28,7 +29,7 @@ ${mensagens.join('\n')}
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: prompt },
-        { role: 'user', content: mensagens.join('\n') }
+        { role: 'user', content: historico.join('\n') }
       ],
       temperature: 0.6
     },
@@ -43,7 +44,8 @@ ${mensagens.join('\n')}
   const respostaFinal = response.data.choices[0].message.content.trim();
 
   return {
-    texto: respostaFinal,
-    contexto
+    texto: respostaFinal
   };
-};
+}
+
+module.exports = gerarResposta;
