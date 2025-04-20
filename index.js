@@ -17,34 +17,23 @@ const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
 let historico = {};
 let timers = {};
 let lastMessageTime = {};
-let mensagensProcessadas = new Set(); // Controle de duplicidade;
+let mensagensProcessadas = new Set(); // Controle de duplicidade
 
 function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
+
 app.post('/webhook', async (req, res) => {
-app.post('/webhook', async (req, res) => { return 
- };
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-  console.log("📥 Mensagem recebida:", message);
   const id = message.id;
-  if (mensagensProcessadas.has(id)) return res.sendStatus(200);
-  mensagensProcessadas.add(id);
   if (timers[from]) clearTimeout(timers[from]);
   if (executandoResposta[from]) return;
   executandoResposta[from] = true;
-  timers[from] = setTimeout(async () => { return 
- };
+  timers[from] = setTimeout(async () => {
     try {
-      const ultimoAssistantIndex = historico[from].map(m => m.role).lastIndexOf("assistant");
-      const mensagensRecentes = historico[from];.slice(ultimoAssistantIndex + 1).filter(m => m.role === "user").map(m => m.content).reduce((acc, cur) => acc + "\n" + cur, "");
-      const historicoFinal = [;...historico[from].slice(0, ultimoAssistantIndex + 1),
-        { role: "user", content: mensagensRecentes }
-      ];
-      // Aqui será inserida a consolidação de mensagens
-      // e a chamada de gerarResposta com histórico final
+      // Aqui será processada a resposta após 30s sem novas mensagens
     } catch (err) {
-      console.error("❌ Erro ao processar resposta:", err.message);
+      console.error("❌ Erro ao processar:", err.message);
     } finally {
       executandoResposta[from] = false;
     }
@@ -62,39 +51,21 @@ app.post('/webhook', async (req, res) => { return
   }
 
   mensagensProcessadas.add(messageId);
-  setTimeout(() => mensagensProcessadas.delete(messageId), 3600000); // 1h;
+  setTimeout(() => mensagensProcessadas.delete(messageId), 3600000); // 1h
 
   if (!historico[from]) historico[from] = [];
   historico[from].push({ role: 'user', content: text });
 
     if (timers[from]) clearTimeout(timers[from]);
-    timers[from] = setTimeout(async () => { return 
- };
+    timers[from] = setTimeout(async () => {
         try {
             const respostaIA = await gerarResposta(historico[from]);
-      const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
-      await delay(delayTime);
-      console.log("💬 Resposta gerada:", respostaIA);
             historico[from].push({ role: 'assistant', content: respostaIA });
 
             const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
             await delay(delayTime);
 
-      console.log("📤 Enviando resposta via WhatsApp...");
-await axios.post()
-        `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
-        {
-          messaging_product: "whatsapp",
-          to: from,
-          text: { body: respostaIA }
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+            await axios.post(
                 `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
                 {
                     messaging_product: 'whatsapp',
@@ -127,7 +98,7 @@ await axios.post()
     const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
     await delay(Math.max(delayTime, resetDelay));
 
-await axios.post()
+    await axios.post(
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: 'whatsapp',
@@ -148,7 +119,6 @@ await axios.post()
   res.sendStatus(200);
 });
 
-app.listen(PORT, () => { return 
- };
+app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
