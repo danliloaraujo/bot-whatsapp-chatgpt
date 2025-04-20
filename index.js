@@ -20,7 +20,7 @@ let lastMessageTime = {};
 let mensagensProcessadas = new Set(); // Controle de duplicidade
 
 function delay(ms) {
-  return new Promise(res => setTimeout(res, ms));
+  return new Promise(res => setTimeout(async res, ms));
 }
 
 app.post('/webhook', async (req, res) => {
