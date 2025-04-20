@@ -92,7 +92,6 @@ app.post('/webhook', async (req, res) => {
       lastMessageTime[from] = currentTime;
     }
 
-    const respostaIA = await gerarResposta(historico[from]);
     historico[from].push({ role: 'assistant', content: respostaIA });
 
     const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
