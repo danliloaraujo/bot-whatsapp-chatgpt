@@ -25,6 +25,7 @@ function delay(ms) {
 
 app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  console.log("📥 Mensagem recebida:", message);
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
@@ -60,10 +61,12 @@ app.post('/webhook', async (req, res) => {
               { role: "user", content: mensagensRecentes }
             ];
             const respostaIA = await gerarResposta(historicoFinal);
+  console.log("💬 Resposta gerada:", respostaIA);
             historico[from].push({ role: "assistant", content: respostaIA });
             const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
             await delay(delayTime);
             await axios.post(
+  console.log("📤 Enviando resposta via WhatsApp...");
                 `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
                 {
                     messaging_product: "whatsapp",
@@ -98,6 +101,7 @@ app.post('/webhook', async (req, res) => {
     await delay(Math.max(delayTime, resetDelay));
 
     await axios.post(
+  console.log("📤 Enviando resposta via WhatsApp...");
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: 'whatsapp',
