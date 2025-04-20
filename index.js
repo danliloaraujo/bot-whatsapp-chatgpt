@@ -15,6 +15,7 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
 
 let historico = {};
+let timers = {};
 let lastMessageTime = {};
 let mensagensProcessadas = new Set(); // Controle de duplicidade
 
@@ -40,6 +41,34 @@ app.post('/webhook', async (req, res) => {
 
   if (!historico[from]) historico[from] = [];
   historico[from].push({ role: 'user', content: text });
+
+    if (timers[from]) clearTimeout(timers[from]);
+    timers[from] = setTimeout(async () => {
+        try {
+            const respostaIA = await gerarResposta(historico[from]);
+            historico[from].push({ role: 'assistant', content: respostaIA });
+
+            const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
+            await delay(delayTime);
+
+            await axios.post(
+                `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+                {
+                    messaging_product: 'whatsapp',
+                    to: from,
+                    text: { body: respostaIA }
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${ACCESS_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        } catch (err) {
+            console.error("❌ Erro ao enviar resposta:", err.message);
+        }
+    }, 30000);
 
   try {
     const currentTime = Date.now();
