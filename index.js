@@ -15,18 +15,22 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
 
 let historico = {};
-let lastMessageTime = {};
 let mensagensProcessadas = new Set(); // Controle de duplicidade
+let respostaTimers = {}; // Controle de debounce
 
 function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
 app.post('/webhook', async (req, res) => {
+  console.log("📦 Payload recebido:", JSON.stringify(req.body, null, 2));
+
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
+
+  console.log("📩 Tentativa de leitura de mensagem:", { from, text, messageId });
 
   if (!from || !text || !messageId) return res.sendStatus(200);
 
@@ -41,37 +45,37 @@ app.post('/webhook', async (req, res) => {
   if (!historico[from]) historico[from] = [];
   historico[from].push({ role: 'user', content: text });
 
-  try {
-    const currentTime = Date.now();
-    const timeSinceLast = currentTime - (lastMessageTime[from] || 0);
-    const resetDelay = 30000;
-    if (timeSinceLast > resetDelay) {
-      lastMessageTime[from] = currentTime;
-    }
-
-    const respostaIA = await gerarResposta(historico[from]);
-    historico[from].push({ role: 'assistant', content: respostaIA });
-
-    const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
-    await delay(Math.max(delayTime, resetDelay));
-
-    await axios.post(
-      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
-      {
-        messaging_product: 'whatsapp',
-        to: from,
-        text: { body: respostaIA }
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${ACCESS_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-  } catch (err) {
-    console.error('❌ Erro ao enviar resposta:', err.message);
+  if (respostaTimers[from]) {
+    clearTimeout(respostaTimers[from]);
   }
+
+  respostaTimers[from] = setTimeout(async () => {
+    try {
+      const respostaIA = await gerarResposta(historico[from]);
+      historico[from].push({ role: 'assistant', content: respostaIA });
+
+      console.log("🤖 Resposta da IA:", respostaIA);
+
+      await axios.post(
+        `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+        {
+          messaging_product: 'whatsapp',
+          to: from,
+          text: { body: respostaIA }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log("📤 Mensagem enviada para:", from);
+    } catch (err) {
+      console.error("❌ Erro ao enviar resposta:", err.message);
+    }
+  }, 30000); // Delay real de 30s
 
   res.sendStatus(200);
 });
