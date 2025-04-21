@@ -49,7 +49,8 @@ app.post('/webhook', async (req, res) => {
     clearTimeout(respostaTimers[from]);
   }
 
-  respostaTimers[from] = setTimeout(async () => {
+      respostaTimers[from] = setTimeout(() => {
+        (async () => {
     try {
       const respostaIA = await gerarResposta(historico[from]);
       historico[from].push({ role: 'assistant', content: respostaIA });
@@ -75,7 +76,8 @@ app.post('/webhook', async (req, res) => {
     } catch (err) {
       console.error('❌ Erro ao enviar resposta:', err.message);
     }
-  }, 30000); // Delay real de 30s
+        })();
+      }, 30000);
 
   res.sendStatus(200);
 });
