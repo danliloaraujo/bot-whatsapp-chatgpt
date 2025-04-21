@@ -1,1 +1,7 @@
-{"name": "valorei-whatsapp-bot", "version": "15.0.0"}
+{
+  "name": "valorei-whatsapp-bot",
+  "version": "15.0.0",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
