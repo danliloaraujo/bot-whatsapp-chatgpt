@@ -23,14 +23,14 @@ function delay(ms) {
 }
 
 app.post('/webhook', async (req, res) => {
-  console.log("📦 Payload recebido:", JSON.stringify(req.body, null, 2));
+  console.log('Payload recebido.');
 
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
 
-  console.log("📩 Tentativa de leitura de mensagem:", { from, text, messageId });
+  console.log('Mensagem:', text);
 
   if (!from || !text || !messageId) return res.sendStatus(200);
 
@@ -54,7 +54,7 @@ app.post('/webhook', async (req, res) => {
       const respostaIA = await gerarResposta(historico[from]);
       historico[from].push({ role: 'assistant', content: respostaIA });
 
-      console.log("🤖 Resposta da IA:", respostaIA);
+        console.log('Resposta:', respostaIA);
 
       await axios.post(
         `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
@@ -71,9 +71,9 @@ app.post('/webhook', async (req, res) => {
         }
       );
 
-      console.log("📤 Mensagem enviada para:", from);
+        console.log('Enviado para:', from);
     } catch (err) {
-      console.error("❌ Erro ao enviar resposta:", err.message);
+      console.error('❌ Erro ao enviar resposta:', err.message);
     }
   }, 30000); // Delay real de 30s
 
