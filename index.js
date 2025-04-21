@@ -23,6 +23,7 @@ function delay(ms) {
 }
 
 app.post('/webhook', async (req, res) => {
+  console.log('📥 Payload recebido:', JSON.stringify(req.body));
   console.log('Payload recebido.');
 
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
@@ -53,6 +54,7 @@ app.post('/webhook', async (req, res) => {
         (async () => {
     try {
       const respostaIA = await gerarResposta(historico[from]);
+    console.log(`📤 Enviando resposta para ${from}: ${respostaIA}`);
       historico[from].push({ role: 'assistant', content: respostaIA });
 
         console.log('Resposta:', respostaIA);
