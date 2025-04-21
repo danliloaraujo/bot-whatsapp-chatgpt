@@ -60,22 +60,30 @@ app.post('/webhook', async (req, res) => {
 
     if (timers[from]) clearTimeout(timers[from]);
         try {
+// [AVISO] Essa linha requer contexto async:
             const respostaIA = await gerarResposta(historico[from]);
             historico[from].push({ role: 'assistant', content: respostaIA });
 
             const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
+// [AVISO] Essa linha requer contexto async:
             await delay(delayTime);
 
+// [AVISO] Essa linha requer contexto async:
             await axios.post(
                 `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+
                 {
                     messaging_product: 'whatsapp',
+
                     to: from,
+
                     text: { body: respostaIA }
                 },
+
                 {
                     headers: {
                         Authorization: `Bearer ${ACCESS_TOKEN}`,
+
                         'Content-Type': 'application/json'
                     }
                 }
@@ -93,21 +101,28 @@ app.post('/webhook', async (req, res) => {
       lastMessageTime[from] = currentTime;
     }
 
+// [AVISO] Essa linha requer contexto async:
     const respostaIA = await gerarResposta(historico[from]);
     historico[from].push({ role: 'assistant', content: respostaIA });
 
     const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
+// [AVISO] Essa linha requer contexto async:
     await delay(Math.max(delayTime, resetDelay));
 
       `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+
       {
         messaging_product: 'whatsapp',
+
         to: from,
+
         text: { body: respostaIA }
       },
+
       {
         headers: {
           Authorization: `Bearer ${ACCESS_TOKEN}`,
+
           'Content-Type': 'application/json'
         }
       }

@@ -1,29 +1,34 @@
 
-console.log("* Iniciando validação do projeto...");
-
 const fs = require("fs");
+const path = require("path");
 
-function checkFileExists(filePath) {
-  if (!fs.existsSync(filePath)) {
-    console.error(`❌ Arquivo ausente: ${filePath}`);
-    process.exit(1);
+console.log("* Iniciando validacao do projeto...");
+
+const REQUIRED_FILES = [
+  "index.js",
+
+  "package.json",
+
+  ".env",
+
+  "validator.js",
+
+  path.join("src", "consultativeBot.js"),
+
+  path.join("src", "respostas.js")
+];
+
+let hasError = false;
+
+REQUIRED_FILES.forEach((file) => {
+  if (!fs.existsSync(file)) {
+    console.error("❌ Arquivo ausente: " + file);
+    hasError = true;
   }
+});
+
+if (hasError) {
+  process.exit(1);
+} else {
+  console.log("✅ Validacao concluida com sucesso!");
 }
-
-function checkFolderExists(folderPath) {
-  if (!fs.existsSync(folderPath) || !fs.lstatSync(folderPath).isDirectory()) {
-    console.error(`❌ Pasta ausente ou inválida: ${folderPath}`);
-    process.exit(1);
-  }
-}
-
-// Estrutura esperada
-checkFolderExists("./");
-checkFileExists("index.js");
-checkFileExists("package.json");
-checkFileExists(".env");
-checkFileExists("respostas.js");
-checkFileExists("consultativeBot.js");
-checkFileExists("validator.js");
-
-console.log("✅ Estrutura validada com sucesso.");

@@ -5,6 +5,7 @@ async function gerarResposta(historico) {
     const prompt = [
       {
         role: 'system',
+
         content: `Você é o Rei, consultor digital da Valorei. Seu papel é entender o objetivo do lead e qualificá-lo com inteligência, clareza e sobriedade, refletindo os valores reais da Valorei.
 
 ⚙️ Regras essenciais:
@@ -95,16 +96,21 @@ Bot: Perfeito, Mariana. O que nos diferencia é que temos uma estrutura enxuta c
 Se fizer sentido pra você, podemos marcar uma reunião rápida no Google Meet pra ver como apoiar nessa demanda.  
 Qual dia e horário seriam bons pra você?`
       },
+
       ...historico
     ];
 
+// [AVISO] Essa linha requer contexto async:
     const resposta = await axios.post("https://api.openai.com/v1/chat/completions", {
       model: "gpt-3.5-turbo",
+
       messages: prompt,
+
       temperature: 0.7
     }, {
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+
         'Content-Type': 'application/json'
       }
     });

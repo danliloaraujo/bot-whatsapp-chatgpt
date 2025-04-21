@@ -4,10 +4,15 @@ const path = require('path');
 
 const requiredFiles = [
     'index.js',
+
     'src/consultativeBot.js',
+
     'src/respostas.js',
+
     '.env',
+
     '.gitignore',
+
     'package.json'
 ];
 
