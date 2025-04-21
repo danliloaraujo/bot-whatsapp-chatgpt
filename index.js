@@ -23,7 +23,6 @@ function delay(ms) {
 }
 
 app.post('/webhook', async (req, res) => {
-  console.log('📩 Mensagem recebida');
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   const from = message?.from;
   const text = message?.text?.body;
@@ -51,7 +50,6 @@ app.post('/webhook', async (req, res) => {
     }
 
     const respostaIA = await gerarResposta(historico[from]);
-    console.log('🤖 Resposta da IA:', respostaIA);
     historico[from].push({ role: 'assistant', content: respostaIA });
 
     const delayTime = Math.min(Math.max(respostaIA.length * 15, 10000), 20000);
