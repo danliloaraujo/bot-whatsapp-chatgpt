@@ -22,6 +22,19 @@ function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
+
+app.get('/webhook', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
+    console.log('🟢 Verificação de webhook recebida');
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
 app.post('/webhook', async (req, res) => {
   console.log('🧪 DEBUG-v49.9.26 | Payload recebido:', JSON.stringify(req.body));
   console.log('📥 Payload recebido:', JSON.stringify(req.body));
