@@ -1,3 +1,4 @@
+let nomePorUsuario = {};
 
 require('dotenv').config();
 const express = require('express');
@@ -50,6 +51,17 @@ app.post('/webhook', async (req, res) => {
     return res.sendStatus(200);
   }
   const from = message?.from;
+  const contacts = req.body.entry[0].changes[0].value.contacts;
+  if (contacts?.[0]?.profile?.name) {
+    nomePorUsuario[from] = contacts[0].profile.name;
+  }
+  const nomeCompleto = nomePorUsuario[from];
+  const nome = nomeCompleto?.split(' ')[0];
+  if (!historico[from]) historico[from] = [];
+  historico[from] = historico[from].map(m => m.role === 'system'
+    ? { ...m, content: m.content.replace(nomeCompleto, nome) }
+    : m);
+
   const text = message?.text?.body;
   const messageId = message?.id;
 
@@ -68,7 +80,6 @@ app.post('/webhook', async (req, res) => {
   if (!historico[from]) historico[from] = [];
   historico[from].push({ role: 'user', content: text });
   const contato = req.body.entry?.[0]?.changes?.[0]?.value?.contacts?.[0];
-  const nome = contato?.profile?.name;
   const respostas = require('./src/respostas');
 
   if (historico[from].length === 1 && nome) {
