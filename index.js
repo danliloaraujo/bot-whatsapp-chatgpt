@@ -23,15 +23,12 @@ function delay(ms) {
 }
 
 app.post('/webhook', async (req, res) => {
-  console.log('🛰️ v49.9.25 | Webhook acionado');
-  console.log('📦 v49.9.25 | Payload bruto:', JSON.stringify(req.body));
-  console.log('🧪 v49.9.24 | Payload recebido:', JSON.stringify(req.body));
+  console.log('🧪 DEBUG-v49.9.26 | Payload recebido:', JSON.stringify(req.body));
   console.log('📥 Payload recebido:', JSON.stringify(req.body));
   console.log('Payload recebido.');
 
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-  console.log('🧪 v49.9.24 | Mensagem identificada:', message);
-  if (!message) console.log('❌ v49.9.25 | Nenhuma mensagem encontrada no payload');
+  console.log('🧪 DEBUG-v49.9.26 | Mensagem identificada:', message);
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
@@ -59,14 +56,12 @@ app.post('/webhook', async (req, res) => {
         (async () => {
     try {
       const respostaIA = await gerarResposta(historico[from]);
-    console.log(`🧪 v49.9.26 | Resposta gerada: ${respostaIA}`);
-    console.log(`🧪 v49.9.24 | Resposta gerada: ${respostaIA}`);
+    console.log(`🧪 DEBUG-v49.9.26 | Resposta gerada: ${respostaIA}`);
     console.log(`📤 Enviando resposta para ${from}: ${respostaIA}`);
       historico[from].push({ role: 'assistant', content: respostaIA });
 
         console.log('Resposta:', respostaIA);
 
-    console.log('📤 v49.9.26 | Enviando resposta para API WhatsApp...');
       await axios.post(
         `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
         {
