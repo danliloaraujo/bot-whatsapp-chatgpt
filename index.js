@@ -36,12 +36,15 @@ app.get('/webhook', (req, res) => {
 });
 
 app.post('/webhook', async (req, res) => {
+  console.log('\n📩 --- NOVA MENSAGEM RECEBIDA (v50) ---');
   console.log('🧪 DEBUG-v49.9.26 | Payload recebido:', JSON.stringify(req.body));
   console.log('📥 Payload recebido:', JSON.stringify(req.body));
   console.log('Payload recebido.');
 
+  console.log('📥 Payload bruto:', JSON.stringify(req.body));
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   console.log('🧪 DEBUG-v49.9.26 | Mensagem identificada:', message);
+  console.log('📤 Mensagem identificada:', message);
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
@@ -69,12 +72,14 @@ app.post('/webhook', async (req, res) => {
         (async () => {
     try {
       const respostaIA = await gerarResposta(historico[from]);
+    console.log(`🤖 Resposta gerada: ${respostaIA}`);
     console.log(`🧪 DEBUG-v49.9.26 | Resposta gerada: ${respostaIA}`);
     console.log(`📤 Enviando resposta para ${from}: ${respostaIA}`);
       historico[from].push({ role: 'assistant', content: respostaIA });
 
         console.log('Resposta:', respostaIA);
 
+    console.log('📡 Enviando resposta para API WhatsApp...');
       await axios.post(
         `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
         {
