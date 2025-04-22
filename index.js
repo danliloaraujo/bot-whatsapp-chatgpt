@@ -23,10 +23,12 @@ function delay(ms) {
 }
 
 app.post('/webhook', async (req, res) => {
+  console.log('🧪 LOGTEST-V2 | Payload recebido:', JSON.stringify(req.body));
   console.log('📥 Payload recebido:', JSON.stringify(req.body));
   console.log('Payload recebido.');
 
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  console.log('🧪 LOGTEST-V2 | Mensagem identificada:', message);
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
@@ -54,6 +56,7 @@ app.post('/webhook', async (req, res) => {
         (async () => {
     try {
       const respostaIA = await gerarResposta(historico[from]);
+    console.log(`🧪 LOGTEST-V2 | Resposta gerada: ${respostaIA}`);
     console.log(`📤 Enviando resposta para ${from}: ${respostaIA}`);
       historico[from].push({ role: 'assistant', content: respostaIA });
 
