@@ -39,7 +39,7 @@ app.post('/webhook', async (req, res) => {
   console.log('\n📩 --- NOVA MENSAGEM RECEBIDA (v50) ---');
   console.log('🧪 DEBUG-v49.9.26 | Payload recebido:', JSON.stringify(req.body));
   console.log('📥 Payload recebido:', JSON.stringify(req.body));
-  console.log('📥 Payload recebido:');
+  console.log('Payload recebido.');
 
   console.log('📥 Payload bruto:', JSON.stringify(req.body));
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
