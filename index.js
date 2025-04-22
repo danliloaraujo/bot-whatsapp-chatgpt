@@ -67,6 +67,14 @@ app.post('/webhook', async (req, res) => {
 
   if (!historico[from]) historico[from] = [];
   historico[from].push({ role: 'user', content: text });
+  const contato = req.body.entry?.[0]?.changes?.[0]?.value?.contacts?.[0];
+  const nome = contato?.profile?.name;
+  const respostas = require('./src/respostas');
+
+  if (historico[from].length === 1 && nome) {
+    historico[from].unshift({ role: 'system', content: respostas.saudacaoInicial(nome) });
+  }
+
 
   if (respostaTimers[from]) {
     clearTimeout(respostaTimers[from]);
