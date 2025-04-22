@@ -59,12 +59,14 @@ app.post('/webhook', async (req, res) => {
         (async () => {
     try {
       const respostaIA = await gerarResposta(historico[from]);
+    console.log(`🧪 v49.9.26 | Resposta gerada: ${respostaIA}`);
     console.log(`🧪 v49.9.24 | Resposta gerada: ${respostaIA}`);
     console.log(`📤 Enviando resposta para ${from}: ${respostaIA}`);
       historico[from].push({ role: 'assistant', content: respostaIA });
 
         console.log('Resposta:', respostaIA);
 
+    console.log('📤 v49.9.26 | Enviando resposta para API WhatsApp...');
       await axios.post(
         `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
         {
