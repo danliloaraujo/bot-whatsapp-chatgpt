@@ -1,6 +1,23 @@
 
 module.exports = {
-  saudacaoInicial: (nome) => `Oi ${nome}! Tudo bem? 👋\n\nSou o assistente da Valorei e quero entender melhor sua empresa antes de sugerir qualquer solução. Vamos lá?`,
+  saudacaoInicial: (nome) => {
+  const hora = new Date().getHours();
+  const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+
+  if (nome) {
+    return `${saudacao}, ${nome}! Tudo certo por aí? 👋
+
+Sou o Rei, consultor digital da Valorei.
+
+Antes da gente seguir, posso te fazer algumas perguntas rápidas? Assim consigo entender melhor seu momento e te ajudar de verdade 😉`;
+  } else {
+    return `${saudacao}! Tudo certo por aí? 👋
+
+Sou o Rei, consultor digital da Valorei.
+
+Antes da gente seguir, posso saber seu nome? Assim consigo personalizar nossa conversa e te ajudar de verdade 😉`;
+  }
+},
 
   erroGeracao: 'Tivemos um erro ao processar sua mensagem. Pode tentar novamente em instantes? 🙏',
 
