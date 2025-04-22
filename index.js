@@ -23,12 +23,15 @@ function delay(ms) {
 }
 
 app.post('/webhook', async (req, res) => {
+  console.log('🛰️ v49.9.25 | Webhook acionado');
+  console.log('📦 v49.9.25 | Payload bruto:', JSON.stringify(req.body));
   console.log('🧪 v49.9.24 | Payload recebido:', JSON.stringify(req.body));
   console.log('📥 Payload recebido:', JSON.stringify(req.body));
   console.log('Payload recebido.');
 
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   console.log('🧪 v49.9.24 | Mensagem identificada:', message);
+  if (!message) console.log('❌ v49.9.25 | Nenhuma mensagem encontrada no payload');
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
