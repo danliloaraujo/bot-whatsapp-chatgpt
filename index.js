@@ -45,6 +45,10 @@ app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   console.log('🧪 DEBUG-v49.9.26 | Mensagem identificada:', message);
   console.log('📤 Mensagem identificada:', message);
+  if (!message) {
+    console.log('⚠️ Payload sem mensagem. Provavelmente um status (sent/delivered). Ignorado.');
+    return res.sendStatus(200);
+  }
   const from = message?.from;
   const text = message?.text?.body;
   const messageId = message?.id;
