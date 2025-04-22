@@ -1,4 +1,3 @@
-
 module.exports = {
   saudacaoInicial: (nome) => {
     const agora = new Date();
