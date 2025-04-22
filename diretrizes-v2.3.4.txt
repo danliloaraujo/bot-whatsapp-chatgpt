@@ -1,0 +1,87 @@
+
+📄 DIRETRIZ v2.3.4 — Sistema de Validação Crítica (atualizada em 21/04/2025)
+
+────────────────────────────────────────────────────
+✅ 1. PRINCÍPIOS GERAIS
+
+- Nenhuma tarefa pode ser executada sem seguir a diretriz
+- Todo processo de versão deve ser validado em 8 etapas
+- Qualquer violação deve cancelar imediatamente a execução
+
+────────────────────────────────────────────────────
+🧱 2. ESTRATÉGIAS DE CONSISTÊNCIA
+
+1. Repetir orientações críticas no final de cada resposta
+2. Armazenar tudo em arquivo de diretrizes versionado
+3. Rodar verificação interna de comportamento antes de enviar ZIP
+4. Toda diretriz nova exige revalidação da versão atual
+
+────────────────────────────────────────────────────
+🔍 3. VALIDAÇÕES AUTOMÁTICAS OBRIGATÓRIAS
+
+- validate.js deve rodar localmente antes do ZIP
+- ESLint (`npx eslint .`) deve retornar 0 erros
+- Confirmar estrutura com todos os arquivos obrigatórios:
+  index.js, validate.js, validator.js, .env.example, .gitignore,
+  README.md, README-processo.md, package.json, src/consultativeBot.js, src/respostas.js
+
+────────────────────────────────────────────────────
+🧠 4. SISTEMA DE VALIDAÇÃO CRÍTICA — 8 PASSOS
+
+1. Objetivo da versão
+   - Base (ex: v49 = delay interpretativo)
+   - Incremento (ex: v49.9.4 = correção do consultativeBot)
+
+2. Estrutura do projeto
+   - Todos os arquivos presentes e conferidos manualmente
+   - Checagem da pasta /src e dos arquivos principais
+
+3. Validação com validate.js
+   - Executar localmente
+   - Retorno deve ser "Validação concluída com sucesso"
+
+4. Validação com ESLint
+   - Rodar `npx eslint .`
+   - Nenhum erro pode estar presente
+
+5. Comando Git para redeploy
+   ```
+   git add .
+   git commit -m "🔁 v49.X | [descrição da mudança]"
+   git push origin main
+   ```
+
+6. Senso crítico e erros recorrentes
+   - Verificação linha por linha dos arquivos modificados
+   - Garantir que nenhum erro repetido volte a ocorrer
+
+7. Checklist completo
+   - Confirmar todos os tópicos anteriores de forma explícita na entrega
+
+8. Validação comportamental
+   - Nenhuma versão pode ser gerada se o consultativeBot.js estiver sem lógica mínima funcional
+   - Qualquer ausência de função válida anula o push
+
+────────────────────────────────────────────────────
+⚠️ 5. DIRETRIZES ADICIONAIS (v2.3.4)
+
+🟨 Git Status obrigatório:
+Antes de qualquer push, é obrigatório rodar:
+
+```
+git status
+```
+
+Se houver arquivos modificados ou excluídos não adicionados ao commit, a operação deve ser interrompida até que se execute:
+
+```
+git add .
+git commit -m "[descrição]"
+git push origin main
+```
+
+🧪 Auditoria obrigatória linha por linha:
+- Cada arquivo ativo de código (ex: index.js, consultativeBot.js, respostas.js, validate.js, validator.js) deve ser auditado individualmente.
+- Verificar: uso correto de `await`, escopos assíncronos, funções válidas, chaves, importações, declarações duplicadas e segurança geral do script.
+- Nenhum zip pode ser gerado se houver linha com possível erro crítico de sintaxe, lógica ou execução.
+- O resultado da auditoria deve ser incluído textualmente no relatório da versão.

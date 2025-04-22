@@ -1,0 +1,81 @@
+📄 DIRETRIZ v4.0 — Sistema de Validação Crítica (atualizada em 21/04/2025)
+
+────────────────────────────────────────────────────
+✅ 1. PRINCÍPIOS GERAIS
+
+- Nenhuma tarefa pode ser executada sem seguir a diretriz
+- Todo processo de versão deve ser validado em 8 etapas
+- Qualquer violação deve cancelar imediatamente a execução
+
+────────────────────────────────────────────────────
+🧱 2. ESTRATÉGIAS DE CONSISTÊNCIA
+
+1. Repetir orientações críticas no final de cada resposta
+2. Armazenar tudo em arquivo de diretrizes versionado
+3. Rodar verificação interna de comportamento antes de enviar ZIP
+4. Toda diretriz nova exige revalidação da versão atual
+
+────────────────────────────────────────────────────
+🧪 3. ORGANIZAÇÃO POR THREADS (obrigatório desde v49.9.11)
+
+1️⃣ Thread Principal (produção): desenvolvimento e validação de versões oficiais  
+2️⃣ Thread Técnica (auditoria): ESLint, validate.js, revisão linha por linha  
+3️⃣ Thread de Logs (deploy): erros no Render, webhook, variáveis de ambiente  
+4️⃣ Thread de Backups (estrutura): validação de arquivos, comparação de versões, restauração de base
+
+Essas threads devem ser usadas conforme sua finalidade, e nenhuma versão será considerada válida se for gerada fora do fluxo aprovado.
+
+────────────────────────────────────────────────────
+🔍 4. VALIDAÇÕES AUTOMÁTICAS OBRIGATÓRIAS
+
+- validate.js deve rodar localmente antes do ZIP
+- ESLint (`npx eslint .`) deve retornar 0 erros
+- Confirmar estrutura com todos os arquivos obrigatórios:
+  index.js, validate.js, validator.js, .env.example, .gitignore,
+  README.md, README-processo.md, package.json, src/consultativeBot.js, src/respostas.js
+
+────────────────────────────────────────────────────
+🧠 5. SISTEMA DE VALIDAÇÃO CRÍTICA — 8 PASSOS
+
+1. Objetivo da versão
+2. Estrutura do projeto
+3. Validação com validate.js
+4. Validação com ESLint
+5. Comando Git para redeploy
+6. Senso crítico e erros recorrentes
+7. Checklist completo
+8. Validação comportamental
+
+────────────────────────────────────────────────────
+⚠️ 6. DIRETRIZES ADICIONAIS (inclui estratégia de logs)
+
+🧾 Avaliação estratégica de logs (desde v4.0):
+
+- Toda versão com webhook ou automação de atendimento deve prever logs funcionais.
+- Logs devem ter prefixo versionado (ex: `🧪 v49.9.X`) para rastreabilidade.
+- Logs mínimos obrigatórios:
+  - Recebimento do payload
+  - Mensagem identificada (com número, tipo e corpo)
+  - Resposta gerada pela IA
+- Recomenda-se **agrupamento visual** com separadores tipo:
+  ```
+  📩 --- NOVA MENSAGEM RECEBIDA (vX.Y.Z) ---
+  ```
+- Opcionalmente, logs podem conter `timestamp` ou serem em `JSON.stringify(...)`
+- Logs silenciosos (não visíveis no Render) devem ser tratados como falha de rastreabilidade
+- Logs devem sempre estar posicionados:
+  - Antes de qualquer `await delay(...)`
+  - Fora de condicionais que possam ser ignoradas
+  - Preferencialmente antes de `res.sendStatus(200)`
+
+📘 Modelo de logs recomendados no Render:
+```
+📩 --- NOVA MENSAGEM RECEBIDA (v49.9.28) ---
+📥 Payload bruto: {...}
+📤 Mensagem identificada: { from: '55...', text: { body: '...' } }
+🤖 Resposta gerada: Olá, como posso te ajudar?
+📡 Enviando resposta para API WhatsApp...
+```
+
+────────────────────────────────────────────────────
+
